@@ -64,7 +64,7 @@ lerp t u v = t * v + (1 - t) * u
 normalise :: (Num a, Floating a) => Vector3 a -> Normalised3 a
 normalise v = v / scalar (norm v)
 
-type Scalar = Double
+type Scalar = Float
 type Point = Vector3 Scalar
 type Direction = Normalised3 Scalar
 
@@ -97,7 +97,7 @@ data Intersection = Intersection
 
 data Sphere = Sphere
   { center :: Point
-  , radius :: Double
+  , radius :: Scalar
   }
   deriving (Show)
 
@@ -148,12 +148,14 @@ trace scene ray =
           & mapMaybe (intersect ray)
    in if null intersections
         then background scene
-        else 1.0
+        else
+          let intersection = minimumBy (compare `on` distance) intersections
+           in min 1 (distance intersection * 0.4)
 
 -- intersections & minimumBy (compare `on` (.distance)) & (.distance)
 
 -- TODO: camera record
-rayAt :: Double -> Double -> Ray
+rayAt :: Scalar -> Scalar -> Ray
 rayAt screenX screenY =
   let depth = 1.0
       y = lerp screenX (-1) 1
