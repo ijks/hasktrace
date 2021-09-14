@@ -164,7 +164,10 @@ rayAt screenX screenY =
 testScene =
   Scene
     { background = 0.0
-    , surfaces = [Surface $ Sphere{center = Vector3 2 0 0, radius = 1}]
+    , surfaces =
+        [ Surface $ Sphere{center = Vector3 1.8 (-0.5) 0, radius = 0.8}
+        , Surface $ Sphere{center = Vector3 1.8 0.5 0, radius = 0.8}
+        ]
     }
 
 main :: IO ()
