@@ -12,61 +12,28 @@ import Control.Applicative (liftA2)
 import Data.Foldable (minimumBy)
 import Data.Function (on, (&))
 import Data.Maybe (mapMaybe)
-
-data Vector3 a
-  = Vector3 !a !a !a
-  deriving (Show, Eq, Ord, Functor)
-
-scalar :: a -> Vector3 a
-scalar x = Vector3 x x x
-
-instance Applicative Vector3 where
-  pure = scalar
-  Vector3 f g h <*> Vector3 x y z = Vector3 (f x) (g y) (h z)
-
-instance Foldable Vector3 where
-  foldMap f (Vector3 x y z) = f x <> f y <> f z
-
-instance Num a => Num (Vector3 a) where
-  (+) = liftA2 (+)
-  (*) = liftA2 (*)
-  negate = fmap negate
-  abs = fmap abs
-  signum = fmap signum
-  fromInteger = scalar . fromInteger
-
-instance Fractional a => Fractional (Vector3 a) where
-  (/) = liftA2 (/)
-  fromRational = scalar . fromRational
-
-dot :: Num a => Vector3 a -> Vector3 a -> a
-dot v1 v2 = sum $ v1 * v2
-
-scale :: Num a => a -> Vector3 a -> Vector3 a
-scale a = fmap (a *)
-
-normSquared :: Num a => Vector3 a -> a
-normSquared v = v `dot` v
-
-norm :: (Num a, Floating a) => Vector3 a -> a
-norm = sqrt . normSquared
-
--- newtype Normalised3 a = Normalised3 {toVector3 :: Vector3 a}
---   deriving (Show, Eq, Ord, Functor)
---   deriving newtype (Applicative, Foldable)
-
--- Not as type safe, but doing dot product with mixed kinds of vector is a pain otherwise.
-type Normalised3 = Vector3
+import Linear hiding (distance, lerp, trace)
 
 lerp :: Num a => a -> a -> a -> a
 lerp t u v = t * v + (1 - t) * u
 
-normalise :: (Num a, Floating a) => Vector3 a -> Normalised3 a
-normalise v = v / scalar (norm v)
+normSquared :: Num a => V3 a -> a
+normSquared = quadrance
+
+-- newtype Normalised3 a = Normalised3 {toV3 :: V3 a}
+--   deriving (Show, Eq, Ord, Functor)
+--   deriving newtype (Applicative, Foldable)
+
+-- Type to keep track of normalised (i.e. norm = 1) vectors.
+-- Not as type safe, but doing dot product with mixed kinds of vector is a pain otherwise.
+type N3 = V3
+
+normalise :: Floating a => V3 a -> N3 a
+normalise = signorm
 
 type Scalar = Float
-type Point = Vector3 Scalar
-type Direction = Normalised3 Scalar
+type Point = V3 Scalar
+type Direction = N3 Scalar
 
 data Ray = Ray
   { origin :: Point
@@ -82,7 +49,7 @@ aimedAt from to =
     }
 
 at :: Ray -> Scalar -> Point
-at ray t = origin ray + scalar t * direction ray
+at ray t = origin ray + pure t * direction ray
 
 class Surface a where
   intersect :: Ray -> a -> Maybe Intersection
@@ -160,15 +127,16 @@ rayAt screenX screenY =
   let depth = 1.0
       y = lerp screenX (-1) 1
       z = lerp screenY 1 (-1)
-      rayTarget = Vector3 depth y z
-   in aimedAt (scalar 0) rayTarget
+      rayTarget = V3 depth y z
+   in aimedAt 0 rayTarget
 
+testScene :: Scene
 testScene =
   Scene
     { background = 0.0
     , surfaces =
-        [ Surface $ Sphere{center = Vector3 1.8 (-0.5) 0, radius = 0.8}
-        , Surface $ Sphere{center = Vector3 1.8 0.5 0, radius = 0.8}
+        [ Surface $ Sphere{center = V3 1.8 (-0.5) 0, radius = 0.8}
+        , Surface $ Sphere{center = V3 1.8 0.5 0, radius = 0.8}
         ]
     }
 
