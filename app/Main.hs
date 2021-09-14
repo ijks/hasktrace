@@ -1,13 +1,17 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralisedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
 module Main where
 
+import Codec.Picture
 import Control.Applicative (liftA2)
+import Data.Foldable (minimumBy)
+import Data.Function (on, (&))
+import Data.Maybe (mapMaybe)
 
 data Vector3 a
   = Vector3 !a !a !a
@@ -36,7 +40,7 @@ instance Fractional a => Fractional (Vector3 a) where
   fromRational = scalar . fromRational
 
 dot :: Num a => Vector3 a -> Vector3 a -> a
-dot v1 v2 = sum $ v1 + v2
+dot v1 v2 = sum $ v1 * v2
 
 scale :: Num a => a -> Vector3 a -> Vector3 a
 scale a = fmap (a *)
@@ -54,6 +58,9 @@ norm = sqrt . normSquared
 -- Not as type safe, but doing dot product with mixed kinds of vector is a pain otherwise.
 type Normalised3 = Vector3
 
+lerp :: Num a => a -> a -> a -> a
+lerp t u v = t * v + (1 - t) * u
+
 normalise :: (Num a, Floating a) => Vector3 a -> Normalised3 a
 normalise v = v / scalar (norm v)
 
@@ -67,8 +74,15 @@ data Ray = Ray
   }
   deriving (Show)
 
+aimedAt :: Point -> Point -> Ray
+aimedAt from to =
+  Ray
+    { origin = from
+    , direction = normalise $ to - from
+    }
+
 at :: Ray -> Scalar -> Point
-at ray t = ray.origin + scalar t * ray.direction
+at ray t = origin ray + scalar t * direction ray
 
 class Surface a where
   intersect :: Ray -> a -> Maybe Intersection
@@ -89,22 +103,21 @@ data Sphere = Sphere
 
 instance Surface Sphere where
   intersect ray sphere = do
-    let
-      oc = ray.origin - sphere.center
-      -- a = normSquared ray.direction = 1
-      -- (because direction is normalised)
-      b = 2 * (oc `dot` ray.direction)
-      c = normSquared oc - sphere.radius ^ 2
-      discriminant = b ^ 2 - 4 * c
+    let oc = origin ray - center sphere
+        -- a = normSquared ray.direction = 1
+        -- (because direction is normalised)
+        b = 2 * (oc `dot` direction ray)
+        c = normSquared oc - radius sphere ^ 2
+        discriminant = b ^ 2 - 4 * c
 
     distance <-
       case compare discriminant 0 of
         LT -> Nothing
-        EQ -> Just $ -b / 2
+        EQ -> Just $ - b / 2
         GT ->
           let sqrtD = sqrt discriminant
-          -- FIXME: this only works if the ray originates from outside the sphere
-          in Just $ min ((-b + sqrtD) / 2) ((-b - sqrtD) / 2)
+           in -- FIXME: this only works if the ray originates from outside the sphere
+              Just $ min ((- b + sqrtD) / 2) ((- b - sqrtD) / 2)
 
     let position = ray `at` distance
 
@@ -112,18 +125,59 @@ instance Surface Sphere where
       Intersection
         { position
         , distance
-        , normal = normalise $ position - sphere.center
+        , normal = normalise $ position - center sphere
         }
 
-data Scene =
-  Scene
-    { background :: Colour
-    , surfaces :: [forall a. Surface a => a]
-    }
+type Colour = Float
+
+data SomeSurface where
+  Surface :: Surface a => a -> SomeSurface
+
+instance Surface SomeSurface where
+  intersect ray (Surface s) = intersect ray s
+
+data Scene = Scene
+  { background :: Colour
+  , surfaces :: [SomeSurface]
+  }
 
 trace :: Scene -> Ray -> Colour
 trace scene ray =
-  let nearest = minimumBy
+  let intersections =
+        surfaces scene
+          & mapMaybe (intersect ray)
+   in if null intersections
+        then background scene
+        else 1.0
+
+-- intersections & minimumBy (compare `on` (.distance)) & (.distance)
+
+-- TODO: camera record
+rayAt :: Double -> Double -> Ray
+rayAt screenX screenY =
+  let depth = 1.0
+      y = lerp screenX (-1) 1
+      z = lerp screenY 1 (-1)
+      rayTarget = Vector3 depth y z
+   in aimedAt (scalar 0) rayTarget
+
+testScene =
+  Scene
+    { background = 0.0
+    , surfaces = [Surface $ Sphere{center = Vector3 2 0 0, radius = 1}]
+    }
 
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = do
+  let (width, height) = (512, 512)
+  let image =
+        generateImage
+          ( \pixelX pixelY ->
+              let x = fromIntegral pixelX / fromIntegral width
+                  y = fromIntegral pixelY / fromIntegral height
+               in trace testScene (rayAt x y)
+          )
+          width
+          height
+
+  savePngImage "test.png" (ImageYF image)
