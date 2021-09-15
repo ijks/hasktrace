@@ -1,2 +1,2 @@
-packages: raytracer-hs.cabal
+packages: .
 with-compiler: ghc-8.10.5
