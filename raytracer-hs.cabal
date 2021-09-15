@@ -25,7 +25,10 @@ executable raytracer-hs
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:
+        Geometry
+        , Material
+        , Surface
 
     default-extensions:
         DerivingStrategies
