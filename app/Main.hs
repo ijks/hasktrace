@@ -13,19 +13,19 @@ import Surface
 
 data Scene = Scene
   { background :: Colour
-  , surfaces :: [SomeSurface]
+  , objects :: [Object]
   }
 
 trace :: Scene -> Ray -> Colour
 trace scene ray =
   let intersections =
-        surfaces scene
-          & mapMaybe (intersect ray)
+        objects scene
+          & mapMaybe (\o -> (o,) <$> intersect ray o)
    in if null intersections
         then background scene
         else
-          let intersection = minimumBy (compare `on` distance) intersections
-           in min 1 (distance intersection * 0.4)
+          let (object, _) = minimumBy (compare `on` distance . snd) intersections
+           in colour $ material object
 
 -- intersections & minimumBy (compare `on` (.distance)) & (.distance)
 
@@ -41,12 +41,15 @@ rayAt screenX screenY =
 testScene :: Scene
 testScene =
   Scene
-    { background = 0.0
-    , surfaces =
-        [ Surface $ Sphere{center = V3 1.8 (-0.5) 0, radius = 0.8}
-        , Surface $ Sphere{center = V3 1.8 0.5 0, radius = 0.8}
+    { background = PixelRGBF 0 0 0
+    , objects =
+        [ sphere (V3 1.8 (-0.5) 0) 0.8 (Material{colour = red})
+        , sphere (V3 1.8 0.5 0) 0.8 (Material{colour = blue})
         ]
     }
+ where
+  red = PixelRGBF 1 0 0
+  blue = PixelRGBF 0 0 1
 
 main :: IO ()
 main = do
@@ -61,4 +64,4 @@ main = do
           width
           height
 
-  savePngImage "test.png" (ImageYF image)
+  savePngImage "test.png" (ImageRGBF image)

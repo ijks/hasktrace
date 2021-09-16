@@ -5,6 +5,7 @@ module Surface where
 import Linear
 
 import Geometry
+import Material
 
 data Intersection = Intersection
   { position :: Point
@@ -55,3 +56,15 @@ data SomeSurface where
 
 instance Surface SomeSurface where
   intersect ray (Surface s) = intersect ray s
+
+data Object = Object
+  { surface :: SomeSurface
+  , material :: Material
+  }
+
+instance Surface Object where
+  intersect ray = intersect ray . surface
+
+sphere :: Point -> Scalar -> Material -> Object
+sphere center radius material =
+  Object{surface = Surface $ Sphere{center, radius}, material}

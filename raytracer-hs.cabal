@@ -36,6 +36,7 @@ executable raytracer-hs
         , GADTs
         , GeneralisedNewtypeDeriving
         , NamedFieldPuns
+        , TupleSections
     build-depends:
         base ^>=4.14.2.0
         , JuicyPixels ^>=3.3.5
