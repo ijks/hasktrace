@@ -26,30 +26,25 @@ data Sphere = Sphere
 
 instance Surface Sphere where
   intersect ray sphere = do
-    let oc = origin ray - center sphere
-        -- a = normSquared ray.direction = 1
-        -- (because direction is normalised)
-        b = 2 * (oc `dot` direction ray)
-        c = normSquared oc - radius sphere ^ 2
-        discriminant = b ^ 2 - 4 * c
+    let toCenter = center sphere - origin ray
+        length = toCenter `dot` direction ray
+        radiusSquared = radius sphere ^ 2
+        perpendicular = toCenter - length *^ direction ray
+        inside = if normSquared toCenter < radiusSquared then 1 else (-1)
+        distance = length + inside * sqrt (radiusSquared - normSquared perpendicular)
+        position = ray `at` distance
+    -- This looks like a lot of computation up front, but we don't actually
+    -- do all of it all of the time, because of laziness.
 
-    distance <-
-      case compare discriminant 0 of
-        LT -> Nothing
-        EQ -> Just $ - b / 2
-        GT ->
-          let sqrtD = sqrt discriminant
-           in -- FIXME: this only works if the ray originates from outside the sphere
-              Just $ min ((- b + sqrtD) / 2) ((- b - sqrtD) / 2)
-
-    let position = ray `at` distance
-
-    pure $
-      Intersection
-        { position
-        , distance
-        , normal = normalise $ position - center sphere
-        }
+    if normSquared perpendicular > radiusSquared || distance <= 0
+      then Nothing
+      else
+        pure $
+          Intersection
+            { position
+            , distance
+            , normal = negate inside *^ normalise (position - center sphere)
+            }
 
 data SomeSurface where
   Surface :: Surface a => a -> SomeSurface
