@@ -86,15 +86,34 @@ testScene =
   red = V3 1 0 0
   blue = V3 0 0 1
 
+largeScene :: Scene
+largeScene =
+  Scene
+    { background = V3 0 0 0
+    , objects =
+        [ sphere (V3 (x + 3) y z) 0.1 (Material{colour = 1})
+        | (x, y, z) <- (,,) <$> range <*> range <*> range
+        ]
+    , ambient = 0.2
+    , lights =
+        [ Light{position = V3 2 (-1) 0.75, intensity = V3 1 0 0}
+        , Light{position = V3 2 1 0.75, intensity = V3 0 1 0}
+        , Light{position = V3 2 0 (-0.75), intensity = V3 0 0 1}
+        ]
+    }
+ where
+  range = [-2, -1.5 .. 2]
+
 main :: IO ()
 main = do
   let (width, height) = (512, 512)
+  let scene = largeScene
   let image =
         generateImage
           ( \pixelX pixelY ->
               let x = fromIntegral pixelX / fromIntegral width
                   y = fromIntegral pixelY / fromIntegral height
-               in toPixel $ trace testScene (rayAt x y)
+               in toPixel $ trace scene (rayAt x y)
           )
           width
           height
