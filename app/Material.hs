@@ -1,8 +1,14 @@
 module Material where
 
-import Codec.Picture (PixelRGBF)
+import Codec.Picture (PixelRGBF (..))
+import Linear (V3 (..))
 
-type Colour = PixelRGBF
+import Geometry
+
+type Colour = N3 Float
+
+toPixel :: Colour -> PixelRGBF
+toPixel (V3 r g b) = PixelRGBF r g b
 
 data Material = Material
   { colour :: Colour
