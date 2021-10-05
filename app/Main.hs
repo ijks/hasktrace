@@ -5,6 +5,8 @@ import Control.Monad (guard)
 import qualified Data.Foldable
 import Data.Function (on)
 import Data.Maybe (mapMaybe)
+import Data.Vector (Vector)
+import qualified Data.Vector as Vector
 import Linear hiding (distance, lerp, trace)
 
 import Geometry
@@ -19,12 +21,12 @@ data Light = Light
 data Scene = Scene
   { background :: Colour
   , ambient :: Colour
-  , objects :: [Object]
-  , lights :: [Light]
+  , objects :: Vector Object
+  , lights :: Vector Light
   }
 
-intersections :: Ray -> Scene -> [(Object, Intersection)]
-intersections ray = mapMaybe (\obj -> (obj,) <$> intersect ray obj) . objects
+intersections :: Ray -> Scene -> Vector (Object, Intersection)
+intersections ray = Vector.mapMaybe (\obj -> (obj,) <$> intersect ray obj) . objects
 
 lightAt :: Point -> Direction -> Scene -> Colour
 lightAt point normal scene =
@@ -76,11 +78,12 @@ testScene =
   Scene
     { background = V3 0 0 0
     , objects =
-        [ sphere (V3 1.8 (-0.5) 0) 0.8 (Material{colour = red})
-        , sphere (V3 1.8 0.3 (-0.5)) 0.5 (Material{colour = blue})
-        ]
+        Vector.fromList
+          [ sphere (V3 1.8 (-0.5) 0) 0.8 (Material{colour = red})
+          , sphere (V3 1.8 0.3 (-0.5)) 0.5 (Material{colour = blue})
+          ]
     , ambient = 0.4
-    , lights = [Light{position = V3 1 (-0.5) 1.2, intensity = 0.8}]
+    , lights = Vector.fromList [Light{position = V3 1 (-0.5) 1.2, intensity = 0.8}]
     }
  where
   red = V3 1 0 0
@@ -91,15 +94,17 @@ largeScene =
   Scene
     { background = V3 0 0 0
     , objects =
-        [ sphere (V3 (x + 3) y z) 0.1 (Material{colour = 1})
-        | (x, y, z) <- (,,) <$> range <*> range <*> range
-        ]
+        Vector.fromList
+          [ sphere (V3 (x + 3) y z) 0.1 (Material{colour = 1})
+          | (x, y, z) <- (,,) <$> range <*> range <*> range
+          ]
     , ambient = 0.2
     , lights =
-        [ Light{position = V3 2 (-1) 0.75, intensity = V3 1 0 0}
-        , Light{position = V3 2 1 0.75, intensity = V3 0 1 0}
-        , Light{position = V3 2 0 (-0.75), intensity = V3 0 0 1}
-        ]
+        Vector.fromList
+          [ Light{position = V3 2 (-1) 0.75, intensity = V3 1 0 0}
+          , Light{position = V3 2 1 0.75, intensity = V3 0 1 0}
+          , Light{position = V3 2 0 (-0.75), intensity = V3 0 0 1}
+          ]
     }
  where
   range = [-2, -1.5 .. 2]
