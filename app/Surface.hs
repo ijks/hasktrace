@@ -46,14 +46,8 @@ instance Surface Sphere where
             , normal = negate inside *^ normalise (position - center sphere)
             }
 
-data SomeSurface where
-  Surface :: Surface a => a -> SomeSurface
-
-instance Surface SomeSurface where
-  intersect ray (Surface s) = intersect ray s
-
 data Object = Object
-  { surface :: SomeSurface
+  { surface :: Sphere
   , material :: Material
   }
 
@@ -62,4 +56,4 @@ instance Surface Object where
 
 sphere :: Point -> Scalar -> Material -> Object
 sphere center radius material =
-  Object{surface = Surface $ Sphere{center, radius}, material}
+  Object{surface = Sphere{center, radius}, material}
