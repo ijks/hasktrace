@@ -21,15 +21,14 @@ maintainer:         daanrijks@pm.me
 -- category:
 extra-source-files: CHANGELOG.md
 
-executable raytracer-hs
-    main-is:          Main.hs
+common common
+    build-depends:
+        base ^>=4.14.2.0
+        , linear ^>=1.21.6
+        , vector ^>=0.12.3.0
+        , JuicyPixels ^>=3.3.5
 
-    -- Modules included in this executable, other than Main.
-    other-modules:
-        Geometry
-        , Material
-        , Surface
-
+    default-language: Haskell2010
     default-extensions:
         DerivingStrategies
         , DuplicateRecordFields
@@ -37,10 +36,35 @@ executable raytracer-hs
         , GeneralisedNewtypeDeriving
         , NamedFieldPuns
         , TupleSections
+
+    ghc-options: -Wall
+
+library
+    import: common
+
+    hs-source-dirs: src
+    exposed-modules:
+        Trace
+        , Trace.Geometry
+        , Trace.Light
+        , Trace.Material
+        , Trace.Scene
+        , Trace.Surface
+
+    -- Modules included in this library but not exported.
+    -- other-modules:
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+
+
+executable trace
+    import: common
+
+    hs-source-dirs: app
+    main-is: Main.hs
     build-depends:
-        base ^>=4.14.2.0
-        , JuicyPixels ^>=3.3.5
-        , linear ^>=1.21.6
-        , vector ^>=0.12.3.0
-    hs-source-dirs:   app
-    default-language: Haskell2010
+        raytracer-hs
+
+    -- Modules included in this executable, other than Main.
+    -- other-modules:

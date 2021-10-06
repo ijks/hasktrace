@@ -1,11 +1,9 @@
-{-# LANGUAGE RankNTypes #-}
-
-module Surface where
+module Trace.Surface where
 
 import Linear
 
-import Geometry
-import Material
+import Trace.Geometry
+import Trace.Material
 
 data Intersection = Intersection
   { position :: Point

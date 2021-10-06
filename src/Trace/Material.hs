@@ -1,9 +1,9 @@
-module Material where
+module Trace.Material where
 
 import Codec.Picture (PixelRGBF (..))
 import Linear (V3 (..))
 
-import Geometry
+import Trace.Geometry
 
 type Colour = N3 Float
 

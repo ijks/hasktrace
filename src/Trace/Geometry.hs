@@ -1,4 +1,4 @@
-module Geometry where
+module Trace.Geometry where
 
 import Linear hiding (lerp)
 
