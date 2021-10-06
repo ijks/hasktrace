@@ -1,5 +1,7 @@
 module Trace.Surface where
 
+import Control.DeepSeq (NFData)
+import GHC.Generics (Generic)
 import Linear
 
 import Trace.Geometry
@@ -11,7 +13,8 @@ data Intersection = Intersection
   , distance :: Scalar
   -- probably also surface colour or the like
   }
-  deriving (Show)
+  deriving (Show, Generic)
+  deriving anyclass (NFData)
 
 class Surface a where
   intersect :: Ray -> a -> Maybe Intersection
@@ -20,7 +23,8 @@ data Sphere = Sphere
   { center :: Point
   , radius :: Scalar
   }
-  deriving (Show)
+  deriving (Show, Generic)
+  deriving anyclass (NFData)
 
 instance Surface Sphere where
   intersect ray sphere = do
@@ -48,6 +52,8 @@ data Object = Object
   { surface :: Sphere
   , material :: Material
   }
+  deriving (Show, Generic)
+  deriving anyclass (NFData)
 
 instance Surface Object where
   intersect ray = intersect ray . surface
