@@ -1,6 +1,5 @@
 import Test.Tasty.Bench
 
-import Data.Vector (Vector)
 import qualified Data.Vector as Vector
 import Linear hiding (trace)
 
@@ -20,7 +19,7 @@ main =
     , bgroup
         "intersections"
         [ bench "small scene" $ nf (flip intersections smallScene) (rayAt 0 0)
-        , bench "small scene" $ nf (flip intersections largeScene) (rayAt 0 0)
+        , bench "large scene" $ nf (flip intersections largeScene) (rayAt 0 0)
         ]
     ]
 
