@@ -20,8 +20,8 @@ class Surface a where
   intersect :: Ray -> a -> Maybe Intersection
 
 data Sphere = Sphere
-  { center :: Point
-  , radius :: Scalar
+  { center :: !Point
+  , radius :: !Scalar
   }
   deriving (Show, Generic)
   deriving anyclass (NFData)
@@ -49,8 +49,8 @@ instance Surface Sphere where
             }
 
 data Object = Object
-  { surface :: Sphere
-  , material :: Material
+  { surface :: !Sphere
+  , material :: !Material
   }
   deriving (Show, Generic)
   deriving anyclass (NFData)

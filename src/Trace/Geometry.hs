@@ -24,8 +24,8 @@ normalise :: Floating a => V3 a -> N3 a
 normalise = signorm
 
 data Ray = Ray
-  { origin :: Point
-  , direction :: Direction
+  { origin :: !Point
+  , direction :: !Direction
   }
   deriving (Show)
 

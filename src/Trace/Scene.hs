@@ -13,8 +13,8 @@ import Trace.Material
 import Trace.Surface
 
 data Scene = Scene
-  { background :: Colour
-  , ambient :: Colour
+  { background :: !Colour
+  , ambient :: !Colour
   , objects :: Vector Object
   , lights :: Vector Light
   }

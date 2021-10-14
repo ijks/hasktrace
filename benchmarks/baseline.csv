@@ -1,5 +1,5 @@
 Name,Mean (ps),2*Stdev (ps)
-All.trace.small scene,91609,5768
-All.trace.large scene,78957135,3757422
-All.intersections.small scene,84613,3182
-All.intersections.large scene,26144623,1942374
+All.trace.small scene,88119,3090
+All.trace.large scene,79203444,6132818
+All.intersections.small scene,86279,2648
+All.intersections.large scene,26026519,1805150

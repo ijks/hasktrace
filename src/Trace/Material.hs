@@ -13,7 +13,7 @@ toPixel :: Colour -> PixelRGBF
 toPixel (V3 r g b) = PixelRGBF r g b
 
 data Material = Material
-  { colour :: Colour
+  { colour :: !Colour
   }
   deriving (Show, Generic)
   deriving anyclass (NFData)
