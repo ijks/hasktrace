@@ -27,7 +27,9 @@ data Sphere = Sphere
   deriving anyclass (NFData)
 
 instance Surface Sphere where
-  intersect ray sphere = do
+  intersect ray sphere =
+    -- This looks like a lot of computation up front, but we don't actually
+    -- do all of it all of the time, because of laziness.
     let toCenter = center sphere - origin ray
         length = toCenter `dot` direction ray
         radiusSquared = radius sphere ^ 2
@@ -35,18 +37,15 @@ instance Surface Sphere where
         inside = if normSquared toCenter < radiusSquared then 1 else (-1)
         distance = length + inside * sqrt (radiusSquared - normSquared perpendicular)
         position = ray `at` distance
-    -- This looks like a lot of computation up front, but we don't actually
-    -- do all of it all of the time, because of laziness.
-
-    if normSquared perpendicular > radiusSquared || distance <= 0
-      then Nothing
-      else
-        pure $
-          Intersection
-            { position
-            , distance
-            , normal = negate inside *^ normalise (position - center sphere)
-            }
+     in if normSquared perpendicular > radiusSquared || distance <= 0
+          then Nothing
+          else
+            Just $
+              Intersection
+                { position
+                , distance
+                , normal = negate inside *^ normalise (position - center sphere)
+                }
 
 data Object = Object
   { surface :: !Sphere

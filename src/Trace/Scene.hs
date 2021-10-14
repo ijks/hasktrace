@@ -49,7 +49,8 @@ trace :: Scene -> Ray -> Colour
 trace scene ray =
   case minimumBy (compare `on` distance . snd) (intersections ray scene) of
     Just (object, intersection) ->
-      lightAt (Trace.Surface.position intersection) (normal intersection) scene * Trace.Material.colour (material object)
+      lightAt (Trace.Surface.position intersection) (normal intersection) scene
+        * Trace.Material.colour (material object)
     Nothing -> background scene
 
 minimumBy :: Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
