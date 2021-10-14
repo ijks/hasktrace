@@ -1,5 +1,5 @@
 cabal-version:      3.4
-name:               raytracer-hs
+name:               hasktrace
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
@@ -69,7 +69,7 @@ executable trace
     hs-source-dirs: app
     main-is: Main.hs
     build-depends:
-        raytracer-hs
+        hasktrace
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
@@ -81,7 +81,7 @@ benchmark benchmarks
     hs-source-dirs: benchmarks
     main-is: Benchmarks.hs
     build-depends:
-        raytracer-hs
+        hasktrace
         , tasty-bench
 
     ghc-options: -O2 -rtsopts
