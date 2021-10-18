@@ -4,6 +4,7 @@ import Codec.Picture
 import qualified Data.Vector as Vector
 import Linear hiding (trace)
 
+import Trace
 import Trace.Light
 import Trace.Material
 import Trace.Scene
@@ -47,16 +48,5 @@ largeScene =
 
 main :: IO ()
 main = do
-  let (width, height) = (512, 512)
-  let scene = largeScene
-  let image =
-        generateImage
-          ( \pixelX pixelY ->
-              let x = fromIntegral pixelX / fromIntegral width
-                  y = fromIntegral pixelY / fromIntegral height
-               in toPixel $ trace scene (rayAt x y)
-          )
-          width
-          height
-
+  let image = render (512, 512) largeScene
   savePngImage "test.png" (ImageRGBF image)
